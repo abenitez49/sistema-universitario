@@ -10,19 +10,18 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <!-- Fondo idéntico al de tu sistema -->
     <body class="font-sans antialiased text-gray-900 bg-[#e5edf5]">
         
-        <!-- Alpine.js controla el estado del Sidebar -->
+        <!-- Estado inicial: Siempre visible (abierto en escritorio) -->
         <div x-data="{ sidebarOpen: window.innerWidth >= 1024 }" @resize.window="sidebarOpen = window.innerWidth >= 1024" class="flex h-screen overflow-hidden">
             
-            <!-- SIDEBAR LATERAL (Importado de navigation) -->
+            <!-- SIDEBAR LATERAL -->
             @include('layouts.navigation')
 
             <!-- ÁREA PRINCIPAL DERECHA -->
             <div class="flex-1 flex flex-col overflow-hidden">
                 
-                <!-- HEADER SUPERIOR (Perfil + Hamburguesa Móvil) -->
+                <!-- HEADER SUPERIOR -->
                 <header class="flex items-center justify-end px-6 py-4 z-20">
                     <div class="flex items-center gap-4">
                         
@@ -52,15 +51,15 @@
                             </x-dropdown>
                         </div>
 
-                        <!-- HAMBURGUESA MÓVIL (Solo visible en pantallas pequeñas) -->
-                        <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg bg-white shadow-sm text-slate-600 focus:outline-none">
+                        <!-- HAMBURGUESA MÓVIL (Solo en celulares) -->
+                        <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg bg-white shadow-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 focus:outline-none transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </button>
 
                     </div>
                 </header>
 
-                <!-- CONTENIDO DINÁMICO (Vistas Blade) -->
+                <!-- CONTENIDO DINÁMICO -->
                 <main class="flex-1 overflow-y-auto overflow-x-hidden">
                     {{ $slot }}
                 </main>

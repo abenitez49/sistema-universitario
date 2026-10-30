@@ -5,14 +5,34 @@ namespace App\Http\Controllers;
 use App\Models\Materia;
 use App\Models\Asistencia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AsistenciaController extends Controller
 {
     // Muestra la lista de materias para elegir
     public function index()
     {
-        // Traemos las materias contando cuántos alumnos tienen
-        $materias = Materia::withCount('alumnos')->paginate(10);
+        $user = Auth::user();
+
+        // 1. Verificamos si es estrictamente un Profesor (y nos aseguramos que no sea un Admin en pruebas)
+        if ($user->hasRole('Profesor') && !$user->hasRole('Administrador')) {
+            
+            // Buscamos el perfil de profesor asociado a esta persona
+            $profesor = $user->persona->profesor ?? null;
+
+            if ($profesor) {
+                // FILTRO INFALIBLE: Usamos la relación de tu modelo Profesor para traer SOLO sus materias
+                $materias = $profesor->materias()->withCount('alumnos')->paginate(10);
+            } else {
+                // Si hay un error de datos y no tiene perfil de profesor, devolvemos un paginador vacío
+                $materias = Materia::where('id', 0)->paginate(10);
+            }
+
+        } else {
+            // 2. Si es Administrador o Administrativo (acceso total a todas las materias)
+            $materias = Materia::withCount('alumnos')->paginate(10);
+        }
+
         return view('asistencias.index', compact('materias'));
     }
 
@@ -22,6 +42,7 @@ class AsistenciaController extends Controller
         // Si no se envía fecha por el buscador, usamos la de hoy
         $fecha = $request->fecha ?? date('Y-m-d');
         
+        // Traemos a los alumnos matriculados ordenados por legajo
         $alumnos = $materia->alumnos()->with('persona')->orderBy('legajo')->get();
         
         // Buscamos si ya se tomó lista ese día para precargar los datos
@@ -53,6 +74,7 @@ class AsistenciaController extends Controller
             
             $porcentaje = ($asistenciasValidas / 4) * 100;
 
+            // Actualiza el registro si ya existe ese día, o crea uno nuevo
             Asistencia::updateOrCreate(
                 ['materia_id' => $materia->id, 'alumno_id' => $alumno_id, 'fecha' => $request->fecha],
                 [
@@ -68,3 +90,6 @@ class AsistenciaController extends Controller
         return redirect()->back()->with('success', 'Lista de asistencia y porcentajes guardados exitosamente.');
     }
 }
+
+
+
