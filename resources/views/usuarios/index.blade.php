@@ -45,7 +45,17 @@
                         </button>
                         
                         <div style="max-width: 350px; width: 100%;">
-                            <input type="text" class="form-control form-control-lg fs-6" placeholder="Buscar por nombre o email...">
+                            <form action="{{ route('usuarios.index') }}" method="GET" class="d-flex">
+                                <input type="text" 
+                                    name="buscar" 
+                                    class="form-control form-control-lg fs-6" 
+                                    placeholder="Buscar por nombre o email..."
+                                    value="{{ request('buscar') }}">
+                                <button class="btn btn-secondary ms-2" type="submit">Buscar</button>
+                                @if(request('buscar'))
+                                    <a href="{{ route('usuarios.index') }}" class="btn btn-outline-danger ms-1" title="Limpiar">X</a>
+                                @endif
+                            </form>
                         </div>
                     </div>
 

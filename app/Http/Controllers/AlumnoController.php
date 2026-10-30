@@ -9,9 +9,29 @@ use Illuminate\Support\Facades\DB;
 
 class AlumnoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $alumnos = Alumno::with('persona')->latest()->paginate(10);
+        $termino = $request->get('buscar');
+
+        // Iniciamos la consulta base (incluyendo la relación 'persona')
+        $query = Alumno::with('persona')->latest();
+
+        // Si se envió un término de búsqueda, aplicamos los filtros
+        if ($termino) {
+            $query->where(function($q) use ($termino) {
+                // Buscamos coincidencia en el legajo del alumno...
+                $q->where('legajo', 'like', '%' . $termino . '%')
+                // ... o buscamos coincidencia en nombres o apellidos de su persona relacionada
+                ->orWhereHas('persona', function($qPersona) use ($termino) {
+                    $qPersona->where('nombres', 'like', '%' . $termino . '%')
+                            ->orWhere('apellidos', 'like', '%' . $termino . '%');
+                });
+            });
+        }
+
+        // Paginamos los resultados. 'appends' mantiene el parámetro 'buscar' al cambiar de página.
+        $alumnos = $query->paginate(10)->appends(['buscar' => $termino]);
+
         return view('alumnos.index', compact('alumnos'));
     }
 

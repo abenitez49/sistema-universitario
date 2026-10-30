@@ -9,9 +9,23 @@ use Illuminate\Support\Facades\DB;
 
 class ProfesorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $profesores = Profesor::with('persona')->latest()->paginate(10);
+        $termino = $request->get('buscar');
+        $query = Profesor::with('persona')->latest();
+
+        if ($termino) {
+            $query->where(function($q) use ($termino) {
+                $q->where('titulo', 'like', '%' . $termino . '%')
+                ->orWhereHas('persona', function($qPersona) use ($termino) {
+                    $qPersona->where('nombres', 'like', '%' . $termino . '%')
+                            ->orWhere('apellidos', 'like', '%' . $termino . '%')
+                            ->orWhere('documento', 'like', '%' . $termino . '%');
+                });
+            });
+        }
+
+        $profesores = $query->paginate(10)->appends(['buscar' => $termino]);
         return view('profesores.index', compact('profesores'));
     }
 

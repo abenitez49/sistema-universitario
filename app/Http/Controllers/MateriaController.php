@@ -7,12 +7,19 @@ use Illuminate\Http\Request;
 
 class MateriaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Paginación directa desde la base de datos para escalabilidad
-        $materias = Materia::latest()->paginate(10);
-        
-        // Retornamos la vista Blade tradicional en lugar de Inertia
+        $termino = $request->get('buscar');
+        $query = Materia::latest();
+
+        if ($termino) {
+            $query->where(function($q) use ($termino) {
+                $q->where('codigo', 'like', '%' . $termino . '%')
+                ->orWhere('nombre', 'like', '%' . $termino . '%');
+            });
+        }
+
+        $materias = $query->paginate(10)->appends(['buscar' => $termino]);
         return view('materias.index', compact('materias'));
     }
 

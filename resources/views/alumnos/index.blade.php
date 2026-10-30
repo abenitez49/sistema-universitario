@@ -46,7 +46,18 @@
                         </button>
                         
                         <div style="max-width: 350px; width: 100%;">
-                            <input type="text" class="form-control form-control-lg fs-6" placeholder="Buscar por nombre o legajo...">
+                            <form action="{{ route('alumnos.index') }}" method="GET" class="d-flex">
+                                <input type="text" 
+                                    name="buscar" 
+                                    class="form-control form-control-lg fs-6" 
+                                    placeholder="Buscar por nombre o legajo..."
+                                    value="{{ request('buscar') }}"> <!-- Mantiene el término buscado en el input -->
+                                <button class="btn btn-secondary ms-2" type="submit">Buscar</button>
+                                <!-- Botón para limpiar la búsqueda si existe un término -->
+                                @if(request('buscar'))
+                                    <a href="{{ route('alumnos.index') }}" class="btn btn-outline-danger ms-1" title="Limpiar">X</a>
+                                @endif
+                            </form>
                         </div>
                     </div>
 
