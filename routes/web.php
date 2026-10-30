@@ -3,6 +3,10 @@
 
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Alumno;
+use App\Models\Materia;
+use App\Models\Profesor;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\MateriaController;
@@ -19,7 +23,13 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $totales = [
+        'usuarios' => User::count(),
+        'alumnos' => Alumno::count(),
+        'profesores' => Profesor::count(),
+        'materias' => Materia::count(),
+    ];
+    return view('dashboard', compact('totales'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
