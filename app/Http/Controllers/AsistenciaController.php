@@ -10,28 +10,33 @@ use Illuminate\Support\Facades\Auth;
 class AsistenciaController extends Controller
 {
     // Muestra la lista de materias para elegir
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $termino = $request->get('buscar');
 
-        // 1. Verificamos si es estrictamente un Profesor (y nos aseguramos que no sea un Admin en pruebas)
+        // 1. Definimos el punto de partida de la consulta según el rol
         if ($user->hasRole('Profesor') && !$user->hasRole('Administrador')) {
-            
-            // Buscamos el perfil de profesor asociado a esta persona
             $profesor = $user->persona->profesor ?? null;
-
             if ($profesor) {
-                // FILTRO INFALIBLE: Usamos la relación de tu modelo Profesor para traer SOLO sus materias
-                $materias = $profesor->materias()->withCount('alumnos')->paginate(10);
+                $query = $profesor->materias(); // Relación directa de sus materias
             } else {
-                // Si hay un error de datos y no tiene perfil de profesor, devolvemos un paginador vacío
-                $materias = Materia::where('id', 0)->paginate(10);
+                $query = Materia::where('id', 0); // Vacío si hay un error de datos
             }
-
         } else {
-            // 2. Si es Administrador o Administrativo (acceso total a todas las materias)
-            $materias = Materia::withCount('alumnos')->paginate(10);
+            $query = Materia::query(); // Administradores ven todas
         }
+
+        // 2. Si el usuario escribió algo en el buscador, filtramos esos resultados
+        if ($termino) {
+            $query->where(function($q) use ($termino) {
+                $q->where('codigo', 'like', '%' . $termino . '%')
+                  ->orWhere('nombre', 'like', '%' . $termino . '%');
+            });
+        }
+
+        // Ejecutamos la consulta contando alumnos y paginando
+        $materias = $query->withCount('alumnos')->paginate(10)->appends(['buscar' => $termino]);
 
         return view('asistencias.index', compact('materias'));
     }

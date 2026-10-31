@@ -8,12 +8,20 @@ use Illuminate\Http\Request;
 
 class MateriaProfesorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Traemos las materias y sus profesores asignados
-        $materias = Materia::with('profesores.persona')->paginate(10);
+        $termino = $request->get('buscar');
         
-        // Traemos todos los profesores disponibles para llenar el <select>
+        $query = Materia::with('profesores.persona');
+
+        if ($termino) {
+            $query->where(function($q) use ($termino) {
+                $q->where('codigo', 'like', '%' . $termino . '%')
+                ->orWhere('nombre', 'like', '%' . $termino . '%');
+            });
+        }
+
+        $materias = $query->paginate(10)->appends(['buscar' => $termino]);
         $profesores = Profesor::with('persona')->get();
         
         return view('asignaciones.profesores.index', compact('materias', 'profesores'));

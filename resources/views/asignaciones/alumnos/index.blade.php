@@ -37,6 +37,23 @@
 
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4 p-md-5">
+                <!-- Buscador añadido para Matriculación de Alumnos -->
+                <div class="d-flex flex-column flex-md-row justify-content-end align-items-md-center mb-4 gap-3">
+                    <div style="max-width: 350px; width: 100%;">
+                        <form action="{{ route('matricular-alumnos.index') }}" method="GET" class="d-flex">
+                            <input type="text" 
+                                name="buscar" 
+                                class="form-control form-control-lg fs-6" 
+                                placeholder="Buscar materia por código o nombre..."
+                                value="{{ request('buscar') }}">
+                            <button class="btn btn-secondary ms-2" type="submit">Buscar</button>
+                            @if(request('buscar'))
+                                <a href="{{ route('matricular-alumnos.index') }}" class="btn btn-outline-danger ms-1" title="Limpiar">X</a>
+                            @endif
+                        </form>
+                    </div>
+                </div>
+                
 
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
